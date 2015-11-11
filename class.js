@@ -1,11 +1,21 @@
-window.Class = function (base, props) {
-    if (!props.hasOwnProperty('_name')) {
-        throw new Error('Class ' + props + ' is missing _name property.');
+ window.Class = function () {
+    var base = null, props;
+
+    props = Array.prototype.pop.call(arguments);
+
+    if (arguments.length > 0) {
+        base = Array.prototype.pop.call(arguments);
+    }
+
+    if (!props.hasOwnProperty('$name')) {
+        throw new Error('Class ' + props + ' is missing $name property.');
     }
     var c = function () {
         this._events = {};
-        if (props.constructor) {
-            props.constructor.apply(this, arguments);
+        if (props.$constructor) {
+            props.$constructor.apply(this, arguments);
+        } else if (this.$constructor) {
+            this.$constructor.apply(this, arguments);
         }
     };
     if (base) {
@@ -24,7 +34,7 @@ window.Class = function (base, props) {
         }
     }
 
-    c.prototype.chain = function () {
+    c.prototype.$chain = function () {
         var object = this;
         var chain = [];
         while (object = object.__proto__) {
@@ -32,18 +42,18 @@ window.Class = function (base, props) {
         }
         return chain;
     };
-    c.prototype.dump = function () {
-        var chain = this._chain();
+    c.prototype.$dump = function () {
+        var chain = this.$chain();
         var parts = [];
         for (var i in chain) {
             if (chain.hasOwnProperty(i)) {
                 var o = chain[i];
-                parts.push(o['_name'] ? o['_name'] : o.toString());
+                parts.push(o.$name ? o.$name : o.toString());
             }
         }
         console.log(parts.join(' <- '));
     };
-    c.prototype.emit = function (event) {
+    c.prototype.$emit = function (event) {
         if (!this._events[event]) {
             return;
         }
@@ -53,14 +63,14 @@ window.Class = function (base, props) {
             timeout.apply(null, args);
         }
     };
-    c.prototype.connect = function (event, method) {
+    c.prototype.$connect = function (event, method) {
         if (!this._events[event]) {
             this._events[event] = [method];
         } else {
             this._events[event].push(method);
         }
     };
-    c.prototype.disconnect = function (event, method) {
+    c.prototype.$disconnect = function (event, method) {
         if (!this._events[event]) {
             return;
         }
@@ -73,7 +83,7 @@ window.Class = function (base, props) {
             this._events[event] = [];
         }
     };
-    c.prototype.disconnectAll = function () {
+    c.prototype.$disconnectAll = function () {
         this._events = {};
     };
 
